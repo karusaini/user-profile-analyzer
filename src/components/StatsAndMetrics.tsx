@@ -1,78 +1,48 @@
-import { Card, CardContent } from "../components/ui/card";
-import { LanguageStats, ProfileStats } from "../types";
+import React from "react"
+import { LanguageStats, ProfileStats } from "../types"
 
-interface Props {
-  languages: LanguageStats[];
-  profile: ProfileStats;
+interface StatsAndMetricsProps {
+  languages: LanguageStats[]
+  profile: ProfileStats & {
+    avatar_url: string
+    name: string
+    login: string
+    bio: string
+  }
 }
 
-export default function StatsAndMetrics({ languages, profile }: Props) {
+const StatsAndMetrics: React.FC<StatsAndMetricsProps> = ({ languages, profile }) => {
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 space-y-6">
-      {/* Heading */}
-      <h2 className="text-2xl font-bold text-gray-800">📈 Stats & Metrics</h2>
-
-      {/* Repository Languages */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {languages.map((lang) => (
-          <Card key={lang.language} className="border bg-white shadow-sm">
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-500">Language</div>
-              <div className="text-lg font-semibold text-gray-800">
-                {lang.language}
-              </div>
-              <div className="mt-2 text-sm">Repos: {lang.count}</div>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Language Distribution */}
+      <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 shadow-md border border-white/30">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">📊 Language Distribution</h2>
+        <ul className="space-y-3">
+          {languages.length > 0 ? (
+            languages.map((lang, idx) => (
+              <li key={idx} className="flex justify-between items-center text-gray-700 font-medium">
+                <span>{lang.language}</span>
+                <span className="text-sm bg-gray-200 px-2 py-1 rounded-md">{lang.percentage}%</span>
+              </li>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No language data available.</p>
+          )}
+        </ul>
       </div>
 
       {/* Profile Analytics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white border">
-          <CardContent className="p-4">
-            <div className="text-sm text-gray-500">Followers</div>
-            <div className="text-2xl font-bold text-gray-800">
-              {profile.followers}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border">
-          <CardContent className="p-4">
-            <div className="text-sm text-gray-500">Following</div>
-            <div className="text-2xl font-bold text-gray-800">
-              {profile.following}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border">
-          <CardContent className="p-4">
-            <div className="text-sm text-gray-500">Public Repos</div>
-            <div className="text-2xl font-bold text-gray-800">
-              {profile.public_repos}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border">
-          <CardContent className="p-4">
-            <div className="text-sm text-gray-500">Gists</div>
-            <div className="text-2xl font-bold text-gray-800">
-              {profile.public_gists}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Joined GitHub */}
-      <div className="text-center text-sm text-gray-500 mt-2">
-        Joined GitHub on{" "}
-        <span className="font-medium text-gray-700">
-          {new Date(profile.created_at).toLocaleDateString()}
-        </span>
+      <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 shadow-md border border-white/30">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">👤 Profile Analytics</h2>
+        <div className="space-y-2 text-gray-700">
+          <p><strong>Name:</strong> {profile.name || "N/A"}</p>
+          <p><strong>Followers:</strong> {profile.followers}</p>
+          <p><strong>Following:</strong> {profile.following}</p>
+          <p><strong>Public Repos:</strong> {profile.public_repos}</p>
+        </div>
       </div>
     </div>
-  );
+  )
 }
+
+export default StatsAndMetrics

@@ -77,7 +77,7 @@ function App() {
 
   return (
     <div className="min-h-screen p-8 bg-gray-50">
-      <h1 className="text-4xl font-bold text-center mb-8 text-black">GitHub User Analyzer</h1>
+      {/* <h1 className="text-4xl font-bold text-center mb-8 text-black">GitHub User Analyzer</h1> */}
 
       <div className="max-w-2xl mx-auto mb-8">
         <UsernameInput onSearch={fetchRepos} />
@@ -92,31 +92,35 @@ function App() {
           </div>
 
           <div className="mt-8 max-w-5xl mx-auto">
-            <Tabs defaultValue="repos" className="w-full">
-              <TabsList className="mb-4 bg-white/10 backdrop-blur p-1 rounded-xl w-full flex justify-center">
-                <TabsTrigger value="repos">Repositories</TabsTrigger>
-                <TabsTrigger value="stats">Stats & Metrics</TabsTrigger>
-                <TabsTrigger value="docs">API Documentation</TabsTrigger>
-              </TabsList>
+          <Tabs defaultValue="repos" className="w-full">
+  <div className="flex justify-center mb-6">
+    <TabsList className="bg-white rounded-xl shadow p-1 inline-flex gap-2">
+      <TabsTrigger
+        value="repos"
+        className="data-[state=active]:bg-black data-[state=active]:text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+      >
+        🗂️ Repositories
+      </TabsTrigger>
+      <TabsTrigger
+        value="stats"
+        className="data-[state=active]:bg-black data-[state=active]:text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+      >
+        📊 Stats & Metrics
+      </TabsTrigger>
+    </TabsList>
+  </div>
 
-              <TabsContent value="repos">
-                <RepoList repos={repos} />
-              </TabsContent>
+  <TabsContent value="repos">
+    <RepoList repos={repos} />
+  </TabsContent>
 
-              <TabsContent value="stats">
-                <StatsAndMetrics languages={languageStats} profile={user} />
-                <CommitsChart data={commitData} />
-              </TabsContent>
+  <TabsContent value="stats">
+    <StatsAndMetrics languages={languageStats} profile={user} />
+    <CommitsChart data={commitData} />
+  </TabsContent>
+</Tabs>
 
-              <TabsContent value="docs">
-                <div className="bg-white shadow rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">GitHub API Endpoints</h2>
-                  <p className="text-sm text-gray-700">🔹 <code>GET /users/:username</code> - Get user profile</p>
-                  <p className="text-sm text-gray-700">🔹 <code>GET /users/:username/repos</code> - Get repositories</p>
-                  <p className="text-sm text-gray-700">🔹 <code>GET /repos/:username/:repo/commits</code> - Get commits</p>
-                </div>
-              </TabsContent>
-            </Tabs>
+
           </div>
         </>
       )}
