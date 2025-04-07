@@ -1,0 +1,195 @@
+this is UsernameInput file
+
+
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { useState } from "react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
+
+interface Props {
+  onSearch: (username: string) => void;
+}
+
+export default function UsernameInput({ onSearch }: Props) {
+  const [username, setUsername] = useState("");
+
+  const handleSearch = () => {
+    if (username.trim()) {
+      onSearch(username.trim());
+    }
+  };
+
+  return (
+    <div className="w-full max-w-xl mx-auto mt-10 px-4">
+      <div className="flex items-center gap-3 bg-white shadow-md p-4 rounded-2xl border border-gray-200">
+        <div className="relative flex-1">
+          <GitHubLogoIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder="Search GitHub username..."
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="pl-10 h-12 text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+          />
+        </div>
+
+        <Button
+          onClick={handleSearch}
+          className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 transition-all"
+        >
+          🔍 Search
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
+
+this is repolist file 
+
+import { Card, CardContent } from "../components/ui/card";
+import { Repo } from "../types";
+
+interface Props {
+  repos: Repo[];
+}
+
+export default function RepoList({ repos }: Props) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+      {repos.map((repo) => (
+        <Card key={repo.id} className="hover:shadow-md transition">
+          <CardContent className="space-y-2 p-4">
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-semibold text-blue-600 hover:underline"
+            >
+              {repo.name}
+            </a>
+            <p className="text-sm text-muted-foreground">{repo.description}</p>
+            <div className="text-sm flex gap-4">
+              <span>⭐ {repo.stargazers_count}</span>
+              <span>{repo.language}</span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+
+
+
+this is commits chart dile
+
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+import { CommitData } from "../types";
+
+interface Props {
+  data: CommitData[];
+}
+
+export default function CommitsChart({ data }: Props) {
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-10 px-4">
+      <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          📊 Commit Frequency (Latest Repo)
+        </h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" className="text-sm" />
+            <YAxis />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#fff",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+              }}
+              labelStyle={{ fontWeight: 600 }}
+            />
+            <Bar dataKey="count" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+this is app file
+
+import { useState } from "react";
+import UsernameInput from "./components/UsernameInput";
+import RepoList from "./components/RepoList";
+import CommitsChart from "./components/CommitsChart";
+import { Repo, CommitData } from "./types";
+import axios from "axios";
+
+
+
+function App() {
+  const [repos, setRepos] = useState<Repo[]>([]);
+  const [commitData, setCommitData] = useState<CommitData[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchRepos = async (username: string) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`https://api.github.com/users/${username}/repos`);
+      setRepos(res.data);
+
+      // Bonus: Fetch commits for first repo (if exists)
+      if (res.data.length > 0) {
+        const firstRepo = res.data[0].name;
+        const commitRes = await axios.get(
+          `https://api.github.com/repos/${username}/${firstRepo}/commits`
+        );
+
+        const commitCounts: Record<string, number> = {};
+        commitRes.data.forEach((commit: any) => {
+          const date = new Date(commit.commit.author.date).toLocaleDateString();
+          commitCounts[date] = (commitCounts[date] || 0) + 1;
+        });
+
+        const chartData: CommitData[] = Object.keys(commitCounts).map((date) => ({
+          date,
+          count: commitCounts[date],
+        }));
+
+        setCommitData(chartData.reverse().slice(0, 7));
+      }
+    } catch (err) {
+      alert("User not found or API error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-5 bg-gray-50">
+      <h1 className="text-3xl font-bold text-center mb-6">GitHub User Analyzer</h1>
+      <UsernameInput onSearch={fetchRepos} />
+      {loading ? <p className="text-center mt-4">Loading...</p> : <RepoList repos={repos} />}
+      {commitData.length > 0 && <CommitsChart data={commitData} />}
+
+    </div>
+  );
+}
+
+export default App;
